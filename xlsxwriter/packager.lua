@@ -41,7 +41,10 @@
 --
 require "xlsxwriter.strict"
 
-local ZipWriter     = require "ZipWriter"
+-- by hsq
+--local ZipWriter     = require "ZipWriter"
+local cutils        = require 'cutils'
+
 local App           = require "xlsxwriter.app"
 local Core          = require "xlsxwriter.core"
 local ContentTypes  = require "xlsxwriter.contenttypes"
@@ -114,10 +117,14 @@ end
 ----
 -- Write the xml files that make up the XLXS OPC package.
 --
-function Packager:_create_package()
+-- by hsq
+--function Packager:_create_package()
+function Packager:_create_package(dont_write_file)
 
-  self.zip = ZipWriter.new()
-  self.zip:open_stream(assert(io.open(self.filename, 'w+b')), true)
+  -- by hsq
+  --self.zip = ZipWriter.new()
+  --self.zip:open_stream(assert(io.open(self.filename, 'w+b')), true)
+  self.zip = cutils.zip()
 
   self:_write_worksheet_files()
   self:_write_chartsheet_files()
@@ -140,7 +147,16 @@ function Packager:_create_package()
   self:_write_drawing_rels_files()
   self:_add_image_files()
 
-  self.zip:close()
+  -- by hsq
+  --self.zip:close()
+  if dont_write_file then
+    return self.zip:close()
+  else
+    local s = self.zip:close()
+    local f = assert(io.open(self.filename, 'w'))
+    assert(f:write(s))
+    assert(f:close())
+  end
 end
 
 ------------------------------------------------------------------------------
@@ -154,12 +170,38 @@ end
 --
 function Packager:_add_to_zip(writer)
 
-  writer:_set_filehandle(io.tmpfile())
+  -- by hsq
+  --writer:_set_filehandle(io.tmpfile())
+  local function make_buff()
+    local buf = {}
+    local meta = {
+      seek = function(self, ...) end,
+      read = function(self, ...)
+        return table.concat(self)
+      end,
+      write = function(self, str)
+        self[#self + 1] = str
+      end,
+      close = function(self)
+        for i = #self, 1, -1 do
+          self[i] = nil
+        end
+      end,
+    }
+    meta.__index = meta
+    return setmetatable(buf, meta)
+  end
+  writer:_set_filehandle(make_buff())
+
   writer:_assemble_xml_file()
 
+  --[[ by hsq
   self.zip:write(writer.filename, 
                  self.file_descriptor,
                  writer:_get_xml_reader())
+  --]]
+  self.zip:archive(writer.filename, 
+                 writer:_get_data())
 end
 
 ----

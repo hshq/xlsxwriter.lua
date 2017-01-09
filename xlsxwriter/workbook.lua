@@ -37,6 +37,10 @@ function Workbook:new(filename, options)
     strings_to_urls     = options["strings_to_urls"] or true,
     default_date_format = options["default_date_format"],
     optimization        = options["constant_memory"],
+    -- by hsq
+    dont_write_file     = options["dont_write_file"],
+    zip_data            = nil,
+
     fileclosed         = false,
     filehandle         = false,
     internal_fh        = false,
@@ -187,6 +191,20 @@ function Workbook:close()
     self.fileclosed = true
     self:_store_workbook()
   end
+end
+
+----
+-- by hsq
+--  Get zip data.
+--
+-- Args:
+--     None.
+--
+-- Returns:
+--     string.
+--
+function Workbook:get_zip_data()
+  return self.zip_data
 end
 
 ----
@@ -366,7 +384,10 @@ function Workbook:_store_workbook()
   local packager = Packager:new(self.filename)
 
   packager:_add_workbook(self)
-  packager:_create_package()
+  -- by hsq
+  --packager:_create_package()
+  self.zip_data = packager:_create_package(self.dont_write_file)
+
   packager = nil
 
 end
