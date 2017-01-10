@@ -1725,10 +1725,7 @@ end
 function Worksheet:_encode_password(plaintext)
 
 
-  -- Use ZipWriter's import of bit/bit32 on Lua5.1/5.2.
-  -- by hsq
-  --local ziputils = require "ZipWriter.utils"
-  --local bit = ziputils.bit
+  -- Use LuaJIT's import of bit/bit32 on Lua5.1/5.2.
   local bit = require 'bit'
 
   local password_hash = 0x0000

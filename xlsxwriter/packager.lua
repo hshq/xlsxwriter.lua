@@ -41,10 +41,7 @@
 --
 require "xlsxwriter.strict"
 
--- by hsq
---local ZipWriter     = require "ZipWriter"
 local cutils        = require 'cutils'
-
 local App           = require "xlsxwriter.app"
 local Core          = require "xlsxwriter.core"
 local ContentTypes  = require "xlsxwriter.contenttypes"
@@ -119,9 +116,6 @@ end
 --
 function Packager:_create_package()
 
-  -- by hsq
-  --self.zip = ZipWriter.new()
-  --self.zip:open_stream(assert(io.open(self.filename, 'w+b')), true)
   self.zip = cutils.zip()
 
   self:_write_worksheet_files()
@@ -145,8 +139,6 @@ function Packager:_create_package()
   self:_write_drawing_rels_files()
   self:_add_image_files()
 
-  -- by hsq
-  --self.zip:close()
   if not self.filename or self.filename == '' then
     self.workbook.zip_data = self.zip:close()
   else
@@ -168,8 +160,6 @@ end
 --
 function Packager:_add_to_zip(writer)
 
-  -- by hsq
-  --writer:_set_filehandle(io.tmpfile())
   local function make_buff()
     local buf = {}
     local meta = {
@@ -190,15 +180,10 @@ function Packager:_add_to_zip(writer)
     return setmetatable(buf, meta)
   end
   writer:_set_filehandle(make_buff())
-
   writer:_assemble_xml_file()
 
-  --[[ by hsq
-  self.zip:write(writer.filename,
-                 self.file_descriptor,
-                 writer:_get_xml_reader())
-  --]]
   self.zip:archive(writer.filename,
+                 --self.file_descriptor,
                  writer:_get_data())
 end
 
