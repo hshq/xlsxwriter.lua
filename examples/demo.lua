@@ -7,7 +7,7 @@
 
 local Workbook = require "xlsxwriter.workbook"
 
-local autoSave = true
+local autoSave = false
 local filename = 'demo.xlsx'
 local workbook  = Workbook:new(autoSave and filename --[[or '']])
 local worksheet = workbook:add_worksheet()
