@@ -24,13 +24,16 @@ setmetatable(Workbook,{__index = Xmlwriter})
 
 function Workbook:new(filename, options)
 
-  assert(filename, "Filename required by Workbook:new()")
+  -- by hsq: return zip data when empty(filename)
+  --assert(filename, "Filename required by Workbook:new()")
   options = options or {}
 
   local instance = {
 
     worksheet_meta      = {activesheet = 0, firstsheet = 0},
-    filename            = filename,
+    -- by hsq: conflict with Xmlwriter.filename
+    --filename            = filename,
+    zip_filename        = filename,
     date_1904           = options["date_1904"],
     strings_to_numbers  = options["strings_to_numbers"],
     strings_to_formulas = options["strings_to_formulas"] or true,
@@ -38,7 +41,6 @@ function Workbook:new(filename, options)
     default_date_format = options["default_date_format"],
     optimization        = options["constant_memory"],
     -- by hsq
-    dont_write_file     = options["dont_write_file"],
     zip_data            = nil,
 
     fileclosed         = false,
@@ -381,12 +383,12 @@ function Workbook:_store_workbook()
   --self:_prepare_tables()
 
   -- Package the workbook.
-  local packager = Packager:new(self.filename)
+  -- by hsq
+  --local packager = Packager:new(self.filename)
+  local packager = Packager:new(self.zip_filename)
 
   packager:_add_workbook(self)
-  -- by hsq
-  --packager:_create_package()
-  self.zip_data = packager:_create_package(self.dont_write_file)
+  packager:_create_package()
 
   packager = nil
 

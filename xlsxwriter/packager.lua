@@ -3,15 +3,15 @@
 --
 -- This module is used in conjunction with xlsxwriter.lua to create
 -- an Excel XLSX container file.
--- 
+--
 -- From Wikipedia: The Open Packaging Conventions (OPC) is a
 -- container-file technology initially created by Microsoft to store
 -- a combination of XML and non-XML files that together form a single
 -- entity such as an Open XML Paper Specification (OpenXPS)
 -- document. http://en.wikipedia.org/wiki/Open_Packaging_Conventions.
--- 
+--
 -- At its simplest an Excel XLSX file contains the following elements:
--- 
+--
 --      ____ [Content_Types].xml
 --     |
 --     |____ docProps
@@ -33,7 +33,7 @@
 --     |
 --     |_____rels
 --       |____ .rels
--- 
+--
 -- The Packager class coordinates the classes that represent the
 -- elements of the package and writes them into the XLSX file.
 --
@@ -117,9 +117,7 @@ end
 ----
 -- Write the xml files that make up the XLXS OPC package.
 --
--- by hsq
---function Packager:_create_package()
-function Packager:_create_package(dont_write_file)
+function Packager:_create_package()
 
   -- by hsq
   --self.zip = ZipWriter.new()
@@ -149,8 +147,8 @@ function Packager:_create_package(dont_write_file)
 
   -- by hsq
   --self.zip:close()
-  if dont_write_file then
-    return self.zip:close()
+  if not self.filename or self.filename == '' then
+    self.workbook.zip_data = self.zip:close()
   else
     local s = self.zip:close()
     local f = assert(io.open(self.filename, 'w'))
@@ -196,11 +194,11 @@ function Packager:_add_to_zip(writer)
   writer:_assemble_xml_file()
 
   --[[ by hsq
-  self.zip:write(writer.filename, 
+  self.zip:write(writer.filename,
                  self.file_descriptor,
                  writer:_get_xml_reader())
   --]]
-  self.zip:archive(writer.filename, 
+  self.zip:archive(writer.filename,
                  writer:_get_data())
 end
 
@@ -290,9 +288,9 @@ function Packager:_write_vml_files()
       -- local vml = Vml:new()
 
       -- vml:_set_filename("xl/drawings/vmlDrawing" .. index .. '.vml')
-      -- vml:_assemble_xml_file(worksheet.vml_data_id, 
-      --                        worksheet.vml_shape_id, 
-      --                        worksheet.comments_array, 
+      -- vml:_assemble_xml_file(worksheet.vml_data_id,
+      --                        worksheet.vml_shape_id,
+      --                        worksheet.comments_array,
       --                        worksheet.buttons_array)
       index = index + 1
     end
@@ -521,11 +519,11 @@ function Packager:_write_workbook_rels_file()
 
   for _, worksheet in ipairs(self.workbook:worksheets()) do
     if worksheet.is_chartsheet then
-      rels:_add_document_relationship("/chartsheet", 
+      rels:_add_document_relationship("/chartsheet",
                                       'chartsheets/sheet' .. chartsheet_index .. '.xml')
       chartsheet_index = chartsheet_index + 1
     else
-      rels:_add_document_relationship("/worksheet", 
+      rels:_add_document_relationship("/worksheet",
                                       'worksheets/sheet' .. worksheet_index .. '.xml')
       worksheet_index = worksheet_index + 1
     end
@@ -560,10 +558,10 @@ function Packager:_write_worksheet_rels_files()
     if not worksheet.is_chartsheet then
       index = index + 1
 
-      local external_links = #worksheet.external_hyper_links 
-        + #worksheet.external_drawing_links 
-        + #worksheet.external_vml_links 
-        + #worksheet.external_table_links 
+      local external_links = #worksheet.external_hyper_links
+        + #worksheet.external_drawing_links
+        + #worksheet.external_vml_links
+        + #worksheet.external_table_links
         + #worksheet.external_comment_links
 
       if external_links > 0 then

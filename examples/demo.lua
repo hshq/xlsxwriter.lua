@@ -9,7 +9,7 @@ local Workbook = require "xlsxwriter.workbook"
 
 -- by hsq
 --local workbook  = Workbook:new("demo.xlsx")
-local workbook  = Workbook:new("demo.xlsx", {dont_write_file = true})
+local workbook  = Workbook:new()
 
 local worksheet = workbook:add_worksheet()
 
